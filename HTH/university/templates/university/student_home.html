@@ -1,0 +1,13 @@
+{% extends 'university/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h1>Student Home</h1>
+            <a href="{% url 'upload_file' %}" class="btn btn-primary mb-3">Upload File</a>
+            <a href="{% url 'view_questions' %}" class="btn btn-secondary mb-3">View Questions</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
