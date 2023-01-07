@@ -23,20 +23,29 @@ def admin_login(request):
             return redirect('admin_login')
     return render(request, 'university/admin_login.html')
 
+def admin_login(request):
+    if request.method == 'POST':
+        if login(request, ADMIN_ROLE):
+            return redirect('admin_home')
+        else:
+            return redirect('admin_login')
+    return render(request, 'university/admin_login.html', {'user': request.user})
 
-@login_required(login_url='admin_login')
-def admin_logout(request):
-    logout(request)
-    return redirect('index')
 
-
-@login_required(login_url='admin_login')
+@role_required(ADMIN_ROLE)
 def admin_home(request):
-    reports = Report.objects.all()
-    return render(request, 'university/admin_home.html', {'reports': reports})
+    courses = Course.objects.all()
+    teacher_files = File.objects.filter(teacher_file=True)
+    student_files = File.objects.filter(teacher_file=False)
+    context = {
+        'courses': courses,
+        'teacher_files': teacher_files,
+        'student_files': student_files
+    }
+    return render(request, 'university/admin_home.html', context)
 
 
-@login_required(login_url='admin_login')
+@role_required(ADMIN_ROLE)
 def add_course(request):
     if request.method == 'POST':
         form = CourseForm(request.POST)
@@ -50,15 +59,15 @@ def add_course(request):
     return render(request, 'university/add_course.html', {'form': form})
 
 
-@login_required(login_url='admin_login')
+@role_required(ADMIN_ROLE)
 def view_courses(request):
     courses = Course.objects.all()
     return render(request, 'university/view_courses.html', {'courses': courses})
 
 
-@login_required(login_url='admin_login')
+@role_required(ADMIN_ROLE)
 def edit_course(request, course_id):
-    course = Course.objects.get(id=course_id)
+    course = get_object_or_404(Course, pk=course_id)
     if request.method == 'POST':
         form = CourseForm(request.POST, instance=course)
         if form.is_valid():
@@ -69,15 +78,15 @@ def edit_course(request, course_id):
     return render(request, 'university/edit_course.html', {'form': form})
 
 
-@login_required(login_url='admin_login')
-def delete_course(course_id):
+@role_required(ADMIN_ROLE)
+def delete_course(request, course_id):
     course = Course.objects.get(id=course_id)
     course.delete()
-    return redirect('view_courses')
+    return redirect('admin_home')
 
 
-@login_required(login_url='admin_login')
-def delete_report(report_id):
+@role_required(ADMIN_ROLE)
+def delete_report(request, report_id):
     report = Report.objects.get(id=report_id)
     report.delete()
     return redirect('admin_home')
