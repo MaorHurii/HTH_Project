@@ -1,25 +1,37 @@
 from django import forms
 from .models import Course, Appointment, Question, Answer, Report, File
 
-
-class CourseForm(forms.Form):
-    name = forms.CharField(max_length=255)
-    category = forms.CharField(max_length=255)
-
-
-class AppointmentForm(forms.Form):
-    student = forms.CharField(max_length=255)
-    time = forms.DateTimeField()
+class CourseForm(forms.ModelForm):
+    class Meta:
+        model = Course
+        fields = ['name', 'category']
 
 
-class AnswerForm(forms.Form):
-    answer = forms.CharField(widget=forms.Textarea)
+class AppointmentForm(forms.ModelForm):
+    class Meta:
+        model = Appointment
+        fields = ['student', 'time']
 
 
-class FileForm(forms.Form):
-    file = forms.FileField()
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ['title', 'description']
 
 
-class QuestionForm(forms.Form):
-    title = forms.CharField(max_length=255)
-    description = forms.CharField(max_length=255, widget=forms.Textarea)
+class AnswerForm(forms.ModelForm):
+    class Meta:
+        model = Answer
+        fields = ['question', 'answer']
+
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ['filename', 'file', 'uploader']
+
+
+class FileForm(forms.ModelForm):
+    class Meta:
+        model = File
+        fields = ['filename', 'file', 'uploader']

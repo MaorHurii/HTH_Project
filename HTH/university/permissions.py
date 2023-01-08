@@ -11,6 +11,7 @@ view_courses_permission = Permission.objects.create(
     content_type=ContentType.objects.get_for_model(Course)
 )
 
+
 # Create permission to add courses
 add_courses_permission = Permission.objects.create(
     codename='add_courses',
