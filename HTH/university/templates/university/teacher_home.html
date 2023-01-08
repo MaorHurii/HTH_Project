@@ -6,10 +6,36 @@
         <div class="col-md-6 offset-md-3">
             <h1>Teacher Home</h1>
             <a href="{% url 'upload_file' %}" class="btn btn-primary mb-3">Upload File</a>
-            <a href="{% url 'view_appointments' %}" class="btn btn-secondary mb-3">View Meeting</a>
+            <a href="{% url 'view_appointments' %}" class="btn btn-secondary mb-3">View Appointments</a>
             <a href="{% url 'view_questions' %}" class="btn btn-secondary mb-3">View Questions</a>
-            <a href="{% url 'admin_reports' %}" class="btn btn-secondary mb-3">View Reports</a>
+            <a href="{% url 'teacher_home' %}" class="btn btn-secondary mb-3">View Reports</a>
         </div>
+        <div class="card-body">
+            <h2>Files</h2>
+            <table class="table">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">Filename</th>
+                        <th scope="col">Uploader</th>
+                        <th scope="col">Timestamp</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in files %}
+                    <tr>
+                        <td>{{ file.filename }}</td>
+                        <td>{{ file.uploader }}</td>
+                        <td>{{ file.timestamp }}</td>
+                        <td>
+                            <a href="{{ file.file.url }}" class="btn btn-secondary btn-sm" download>Download</a>
+                            <a href="{% url 'delete_file' file.id %}" class="btn btn-danger btn-sm">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+       </div>
     </div>
 </div>
 {% endblock %}
