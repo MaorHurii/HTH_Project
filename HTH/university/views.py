@@ -94,59 +94,33 @@ def delete_report(request, report_id):
 
 def teacher_login(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('teacher_home')
-        else:
-            messages.warning(request, 'Invalid username or password')
-            return redirect('teacher_login')
+        if request.method == 'POST':
+            if login(request, TEACHER_ROLE):
+                return redirect('teacher_home')
+            else:
+                return redirect('teacher_login')
     return render(request, 'university/teacher_login.html')
 
 
-@login_required(login_url='teacher_login')
-def teacher_logout(request):
-    logout(request)
-    return redirect('index')
-
-
-@login_required(login_url='teacher_login')
+@role_required(TEACHER_ROLE)
 def teacher_home(request):
-    return render(request, 'university/teacher_home.html')
+    files = File.objects.filter(teacher_file=True)
+    return render(request, 'university/teacher_home.html', {'files': files})
 
 
-@login_required(login_url='teacher_login')
-def upload_file(request):
-    if request.method == 'POST':
-        file = request.FILES['file']
-        filename = file.name
-        Report.objects.create(filename=filename, file=file, uploader=request.user.username)
-        return redirect('teacher_home')
-    return render(request, 'university/upload_file.html')
-
-
-@login_required(login_url='teacher_login')
+@role_required(TEACHER_ROLE)
 def view_reports(request):
     reports = Report.objects.all()
     return render(request, 'university/view_reports.html', {'reports': reports})
 
 
-@login_required(login_url='teacher_login')
-def delete_file(report_id):
-    report = Report.objects.get(id=report_id)
-    report.delete()
-    return redirect('view_reports')
-
-
-@login_required(login_url='teacher_login')
+@role_required(TEACHER_ROLE)
 def view_appointments(request):
     appointments = Appointment.objects.all()
     return render(request, 'university/view_appointments.html', {'appointments': appointments})
 
 
-@login_required(login_url='teacher_login')
+@role_required(TEACHER_ROLE)
 def create_appointment(request):
     if request.method == 'POST':
         form = AppointmentForm(request.POST)
@@ -166,13 +140,13 @@ def delete_appointment(appointment_id):
     return redirect('view_appointments')
 
 
-@login_required(login_url='teacher_login')
+@role_required(TEACHER_ROLE)
 def view_questions(request):
     questions = Question.objects.all()
     return render(request, 'university/view_questions.html', {'questions': questions})
 
 
-@login_required(login_url='teacher_login')
+@role_required(TEACHER_ROLE)
 def create_question(request):
     if request.method == 'POST':
         title = request.POST['title']
@@ -182,14 +156,14 @@ def create_question(request):
     return render(request, 'university/create_question.html')
 
 
-@login_required(login_url='teacher_login')
+@role_required(TEACHER_ROLE)
 def delete_question(question_id):
     question = Question.objects.get(id=question_id)
     question.delete()
     return redirect('view_questions')
 
 
-@login_required(login_url='teacher_login')
+@role_required(TEACHER_ROLE)
 def answer_question(request, question_id):
     if request.method == 'POST':
         form = AnswerForm(request.POST)
@@ -201,7 +175,6 @@ def answer_question(request, question_id):
     else:
         form = AnswerForm()
     return render(request, 'university/answer_question.html', {'form': form})
-
 
 def student_login(request):
     if request.method == 'POST':
