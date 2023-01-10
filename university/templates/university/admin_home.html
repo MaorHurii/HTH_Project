@@ -1,0 +1,87 @@
+{% extends 'university/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    Admin Home
+                </div>
+                <div class="card-body">
+                    <h2 class="mt-1 mb-2">Courses</h2>
+                    <table class="table">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                                <tr>
+                                    <td>{{ course.name }}</td>
+                                    <td>{{ course.category }}</td>
+                                    <td>
+                                        <a href="{% url 'edit_course' course.id %}">Edit</a>
+                                        <a href="{% url 'delete_course' course.id %}">Delete</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <h2>Teacher Files</h2>
+                    <table class="table">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Filename</th>
+                                <th scope="col">Uploader</th>
+                                <th scope="col">Timestamp</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in teacher_files %}
+                            <tr>
+                                <td>{{ file.filename }}</td>
+                                <td>{{ file.uploader }}</td>
+                                <td>{{ file.timestamp }}</td>
+                                <td>
+                                    <a href="{{ file.file.url }}" class="btn btn-secondary btn-sm" download>Download</a>
+                                    <a href="{% url 'delete_file' file.id %}" class="btn btn-danger btn-sm">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <h2>Student Files</h2>
+                    <table class="table">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Filename</th>
+                                <th scope="col">Uploader</th>
+                                <th scope="col">Timestamp</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in student_files %}
+                            <tr>
+                                <td>{{ file.filename }}</td>
+                                <td>{{ file.uploader }}</td>
+                                <td>{{ file.timestamp }}</td>
+                                <td>
+                                    <a href="{{ file.file.url }}" class="btn btn-secondary btn-sm" download>Download</a>
+                                    <a href="{% url 'delete_file' file.id %}" class="btn btn-danger btn-sm">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
