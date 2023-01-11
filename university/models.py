@@ -41,7 +41,7 @@ class File(models.Model):
     uploader = models.CharField(max_length=255)
     timestamp = models.DateTimeField(auto_now_add=True)
     teacher_file = models.BooleanField(default=False)
-
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='files')
 
 # User roles
 class Teacher(models.Model):
