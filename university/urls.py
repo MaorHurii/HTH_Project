@@ -5,8 +5,6 @@ app_name = 'university'
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('admin/login/', views.admin_login, name='admin_login'),
-    path('admin/logout/', views.logout, name='logout'),
     path('admin/home/', views.admin_home, name='admin_home'),
     path('admin/add_course/', views.add_course, name='add_course'),
     path('admin/delete_course/<int:course_id>/', views.delete_course, name='delete_course'),
