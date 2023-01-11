@@ -65,15 +65,6 @@ def logout(request):
 # Admin context start
 
 
-def admin_login(request):
-    if request.method == 'POST':
-        if login(request, ADMIN_ROLE):
-            return redirect('admin_home')
-        else:
-            return redirect('admin_login')
-    return render(request, 'university/admin_login.html', {'user': request.user})
-
-
 @role_required(ADMIN_ROLE)
 def admin_home(request):
     courses = Course.objects.all()
@@ -85,6 +76,7 @@ def admin_home(request):
         'student_files': student_files
     }
     return render(request, 'university/admin_home.html', context)
+
 
 
 @role_required(ADMIN_ROLE)
