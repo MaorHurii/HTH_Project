@@ -190,8 +190,8 @@ def create_appointment(request):
     return render(request, 'university/create_appointment.html', {'form': form})
 
 
-
-def delete_appointment(appointment_id):
+@role_required(TEACHER_ROLE)
+def delete_appointment(request, appointment_id):
     appointment = Appointment.objects.get(id=appointment_id)
     appointment.delete()
     return redirect('view_appointments')
