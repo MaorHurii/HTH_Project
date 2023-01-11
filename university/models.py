@@ -14,24 +14,22 @@ class Appointment(models.Model):
     time = models.DateTimeField()
 
 
-class Question(models.Model):
-    objects = models.Manager()
-    title = models.CharField(max_length=255)
-    description = models.TextField()
+class Question(models.Model): # Question מגדיר מחלקה בשם 
+    objects = models.Manager()  
+    title = models.CharField(max_length=255) #מכיל את כותרת השאלה בתוך מחרוזת באורך של 255 תוים 
+    body = models.TextField()#מכיל את גוף השאלה בתוך מחרוזת ארוכה 
+    course = models.ForeignKey(Course, on_delete=models.CASCADE) #מכיל קישור למחלקה ומוסיף אופציה למחיקה 
+    creator = models.CharField(max_length=255)#מכיל את שם יוצר השאלה 
+    timestamp = models.DateTimeField(auto_now_add=True)#תאריך וזמן יצירת השאלה 
 
 
-class Answer(models.Model):
+class Answer(models.Model): 
     objects = models.Manager()
+    creator = models.CharField(max_length=255)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    answer= models.TextField()
-
-
-class Report(models.Model):
-    objects = models.Manager()
-    filename = models.CharField(max_length=255)
-    file = models.FileField(upload_to='reports/')
-    uploader = models.CharField(max_length=255)
+    body = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+
 
 
 class File(models.Model):

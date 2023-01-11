@@ -165,64 +165,80 @@ def view_appointments(request):
     appointments = Appointment.objects.all()
     return render(request, 'university/view_appointments.html', {'appointments': appointments})
 
-
-@role_required(TEACHER_ROLE)
+@role_required(STUDENT_TEACHER_ROLE)
 def create_appointment(request):
     if request.method == 'POST':
         form = AppointmentForm(request.POST)
         if form.is_valid():
-            student = form.cleaned_data['student']
+            if validate_role(request.user, TEACHER_ROLE):
+                teacher = request.user.username
+                student = form.cleaned_data['student']
+            else:
+                student = request.user.username
+                teacher = form.cleaned_data['teacher']
+
             time = form.cleaned_data['time']
-            Appointment.objects.create(student=student, time=time)
-            return redirect('view_appointments')
+            link = form.cleaned_data['zoom_link']
+            Appointment.objects.create(teacher=teacher, student=student, time=time, zoom_link=link)
+        return redirect('view_appointments')
     else:
         form = AppointmentForm()
-    return render(request, 'university/create_appointment.html')
+    return render(request, 'university/create_appointment.html', {'form': form})
 
 
-def delete_appointment(appointment_id):
+@role_required(TEACHER_ROLE)
+def delete_appointment(request, appointment_id):
     appointment = Appointment.objects.get(id=appointment_id)
     appointment.delete()
     return redirect('view_appointments')
 
+# Teacher context end
+    
+# Student context start
 
-@role_required(TEACHER_ROLE)
-def view_questions(request):
-    questions = Question.objects.all()
-    return render(request, 'university/view_questions.html', {'questions': questions})
+@role_required(STUDENT_TEACHER_ROLE)
+def view_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+    answers = Answer.objects.filter(question=question).order_by('timestamp')
+    context = {
+        'question': question,
+        'answers': answers
+    }
+    return render(request, 'university/view_question.html', context)
 
 
-@role_required(TEACHER_ROLE)
-def create_question(request):
+@role_required(STUDENT_ROLE)
+def create_question(request, course_id):
+    course_obj = get_object_or_404(Course, id=course_id)
     if request.method == 'POST':
         title = request.POST['title']
-        description = request.POST['description']
-        Question.objects.create(title=title, description=description)
-        return redirect('view_questions')
-    return render(request, 'university/create_question.html')
+        body = request.POST['body']
+        creator = request.user.username
+        question = Question.objects.create(title=title, body=body, creator=creator, course=course_obj)
+        return redirect('view_question', question_id=question.id)
+    return redirect(request, 'course', course_id=course_id)
 
 
-@role_required(TEACHER_ROLE)
-def delete_question(question_id):
+@role_required(STUDENT_TEACHER_ROLE)
+def delete_question(request, question_id):
     question = Question.objects.get(id=question_id)
-    question.delete()
-    return redirect('view_questions')
+    # Check if the user is allowed to delete the question
+    if validate_role(request.user, TEACHER_ROLE) or question.creator == request.user.username:
+        question.delete()
+    return redirect('course', course_id=question.course.id)
 
 
-@role_required(TEACHER_ROLE)
-def answer_question(request, question_id):
+@role_required(STUDENT_TEACHER_ROLE) 
+def answer_question(request, question_id): 
+    question = get_object_or_404(Question, id=question_id) 
     if request.method == 'POST':
         form = AnswerForm(request.POST)
-        if form.is_valid():
-            answer = form.cleaned_data['answer']
-            question = Question.objects.get(id=question_id)
-            Answer.objects.create(question=question, answer=answer)
-            return redirect('view_questions')
-    else:
-        form = AnswerForm()
-    return render(request, 'university/answer_question.html', {'form': form})
+        answer = form.save(commit=False)
+        answer.creator = request.user
+        answer.question = question
+        answer.save()
+        return redirect('view_question', question_id=question_id)
 
-# Teacher context end
 
 # Student context start
 
