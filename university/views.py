@@ -1,34 +1,35 @@
 from django.contrib.auth import authenticate, login as login_user, logout as logout_user
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.contrib.auth.models import Group
 from django.contrib import messages
-from .models import Course, Appointment, Report, Question, Answer, File
-from .forms import CourseForm, AppointmentForm, AnswerForm
+
+from .constants import ADMIN_ROLE, TEACHER_ADMIN_ROLE, STUDENT_TEACHER_ROLE, TEACHER_ROLE, STUDENT_ROLE
+from .models import Course, Appointment, Question, File, Answer, Scholarship
+from .forms import CourseForm, AppointmentForm, AnswerForm, SignUpForm
 
 
-ADMIN_ROLE = 'Admin'
-TEACHER_ROLE = 'Teacher'
-STUDENT_ROLE = 'Student'
-TEACHER_ADMIN_ROLE = 'student_admin'
-STUDENT_TEACHER_ROLE = 'student_teacher'
 
 
 def index(request):
     return render(request, 'university/index.html')
 
 
-def login(request, role):
-    username = request.POST['username']
-    password = request.POST['password']
-    user = authenticate(request, username=username, password=password)
 
-    if user is not None and validate_role(user, role):
-        login_user(request, user)
-        return True
-    else:
-        messages.warning(request, 'Invalid username or password')
-        return False
+def login(request):
+    """Handles the login of users and redirects them to their respective home pages"""
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login_user(request, user)
+            return redirect('admin_home' if user.is_superuser else 'home')
+        else:
+            messages.warning(request, 'Invalid username or password')
+    return render(request, 'university/login.html')
 
 
 def validate_role(user, role):
@@ -130,15 +131,6 @@ def delete_report(request, report_id):
 # Teacher context start
 
 
-def teacher_login(request):
-    if request.method == 'POST':
-        if request.method == 'POST':
-            if login(request, TEACHER_ROLE):
-                return redirect('teacher_home')
-            else:
-                return redirect('teacher_login')
-    return render(request, 'university/teacher_login.html')
-
 
 @role_required(TEACHER_ROLE)
 def teacher_home(request):
@@ -178,11 +170,6 @@ def delete_appointment(appointment_id):
     return redirect('view_appointments')
 
 
-@role_required(TEACHER_ROLE)
-def view_questions(request):
-    questions = Question.objects.all()
-    return render(request, 'university/view_questions.html', {'questions': questions})
-
 
 @role_required(TEACHER_ROLE)
 def create_question(request):
@@ -219,14 +206,6 @@ def answer_question(request, question_id):
 # Student context start
 
 
-def student_login(request):
-    if request.method == 'POST':
-        if login(request, STUDENT_ROLE):
-            return redirect('student_home')
-        else:
-            return redirect('student_login')
-    return render(request, 'university/student_login.html')
-
 
 @role_required(STUDENT_ROLE)
 def student_home(request):
@@ -255,16 +234,17 @@ def create_question(request):
 
 # All context start
 
-@role_required(STUDENT_TEACHER_ROLE)
-def upload_file(request):
+@login_required
+def upload_file(request, course_id):
+    course_obj = get_object_or_404(Course, id=course_id)
     if request.method == 'POST':
         file = request.FILES['file']
         filename = file.name
         teacher_file = validate_role(request.user, TEACHER_ROLE)
-        File.objects.create(filename=filename, file=file, uploader=request.user.username, teacher_file=teacher_file)
-        return redirect('teacher_home' if teacher_file else 'student_home')
-    return render(request, 'university/upload_file.html')
-
+        File.objects.create(
+            filename=filename, file=file, uploader=request.user.username, teacher_file=teacher_file, course=course_obj
+        )
+        return redirect('course', course_id=course_id)
 
 @login_required
 def delete_file(request, file_id):
@@ -275,5 +255,16 @@ def delete_file(request, file_id):
         file.file.delete()
         file.delete()
     return redirect('admin_home') if request.user.is_superuser else redirect('course', course_id)
+
+@role_required(STUDENT_TEACHER_ROLE)
+def view_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+    answers = Answer.objects.filter(question=question).order_by('timestamp')
+    context = {
+        'question': question,
+        'answers': answers
+    }
+    return render(request, 'university/view_question.html', context)
+
 
 # All context end

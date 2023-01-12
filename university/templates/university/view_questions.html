@@ -1,19 +1,31 @@
 {% extends 'university/base.html' %}
+{% load custom_tags %}
 
 {% block content %}
 <div class="container mt-5">
-    <div class="row">
-        <div class="col-md-6 offset-md-3">
-            <h1>Questions</h1>
-            {% for question in questions %}
-            <div class="card mb-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow p-3 mb-5 bg-white rounded">
+                <div class="card-header bg-secondary text-white rounded">
+                    <h3 class="text-center">{{ question.title }}</h3>
+                </div>
                 <div class="card-body">
-                    <h5 class="card-title">{{ question.title }}</h5>
-                    <p class="card-text">{{ question.description }}</p>
-                    <a href="{% url 'answer_question' question.id %}" class="btn btn-primary">Answer</a>
+                    <h5 class="font-weight-bold mb-3">{{ question.creator }}</h5>
+                    <p>{{ question.body }}</p>
+                    <hr>
+                    {% for answer in answers %}
+                        <h5 class="font-weight-bold mb-3">{{ answer.creator }}</h5>
+                        <p>{{ answer.body }}</p>
+                        <hr>
+                    {% endfor %}
+                    <h5 class="font-weight-bold mb-3">Add Answer</h5>
+                    <form method="post" action="{% url 'answer_question' question.id %}">
+                        {% csrf_token %}
+                        <textarea name="body" placeholder="Write your answer here" class="form-control" required></textarea>
+                        <button type="submit" class="btn btn-primary mt-3">Add Answer</button>
+                    </form>
                 </div>
             </div>
-            {% endfor %}
         </div>
     </div>
 </div>
