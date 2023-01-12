@@ -1,5 +1,26 @@
 from django import forms
-from .models import Course, Appointment, Question, Answer, Report, File
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User, Group
+from django.forms import SelectDateWidget
+
+from .constants import USER_ROLES, STUDENT_ROLE
+from .models import Course, Appointment, Question, Answer, File
+
+
+
+
+def get_student_list():
+    student_group = Group.objects.get(name=STUDENT_ROLE)
+    students = student_group.user_set.all()
+    # This returns the students list in the required format for the choices field [(s1,s1),(s2,s2)..]
+    return [(student.username, student.username) for student in students]
+
+def get_teacher_list():
+    teacher_group = Group.objects.get(name=STUDENT_ROLE)
+    teachers = teacher_group.user_set.all()
+    # This returns the students list in the required format for the choices field [(s1,s1),(s2,s2)..]
+    return [(teacher.username, teacher.username) for teacher in teachers]
+
 
 class CourseForm(forms.ModelForm):
     class Meta:

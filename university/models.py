@@ -17,13 +17,18 @@ class Appointment(models.Model):
 class Question(models.Model):
     objects = models.Manager()
     title = models.CharField(max_length=255)
-    description = models.TextField()
+    body = models.TextField()
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    creator = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
 
 class Answer(models.Model):
     objects = models.Manager()
+    creator = models.CharField(max_length=255)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    answer= models.TextField()
+    body = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
 
 
 class Report(models.Model):
