@@ -38,7 +38,8 @@ class AppointmentForm(forms.ModelForm):
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['title', 'description']
+        fields = ['title', 'body']
+
 
 
 class AnswerForm(forms.ModelForm):

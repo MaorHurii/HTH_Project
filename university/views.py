@@ -192,11 +192,13 @@ def create_question(request):
     return render(request, 'university/create_question.html')
 
 
-@role_required(TEACHER_ROLE)
-def delete_question(question_id):
+@role_required(STUDENT_TEACHER_ROLE)
+def delete_question(request, question_id):
     question = Question.objects.get(id=question_id)
-    question.delete()
-    return redirect('view_questions')
+    # Check if the user is allowed to delete the file
+    if validate_role(request.user, TEACHER_ROLE) or question.creator == request.user.username:
+        question.delete()
+    return redirect('course', course_id=question.course.id)
 
 
 @role_required(TEACHER_ROLE)
