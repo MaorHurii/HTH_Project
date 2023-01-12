@@ -65,15 +65,6 @@ def logout(request):
 # Admin context start
 
 
-def admin_login(request):
-    if request.method == 'POST':
-        if login(request, ADMIN_ROLE):
-            return redirect('admin_home')
-        else:
-            return redirect('admin_login')
-    return render(request, 'university/admin_login.html', {'user': request.user})
-
-
 @role_required(ADMIN_ROLE)
 def admin_home(request):
     courses = Course.objects.all()
@@ -85,6 +76,7 @@ def admin_home(request):
         'student_files': student_files
     }
     return render(request, 'university/admin_home.html', context)
+
 
 
 @role_required(ADMIN_ROLE)
@@ -292,16 +284,12 @@ def upload_file(request):
 
 @login_required
 def delete_file(request, file_id):
-    file = File.objects.get(id=file_id)
-    role = TEACHER_ROLE if file.teacher_file else STUDENT_ROLE
-    if request.user.is_superuser or validate_role(request.user, role):
+    file = get_object_or_404(File, id=file_id)
+    course_id = file.course.id
+    # Check if the user is allowed to delete the file
+    if request.user.is_superuser or request.user.username == request.user.username:
+        file.file.delete()
         file.delete()
-    if request.user.is_superuser:
-        home = 'admin_home'
-    elif validate_role(request.user, TEACHER_ROLE):
-        home = 'teacher_home'
-    else:
-        home = 'student_home'
-    return redirect(home)
+    return redirect('admin_home') if request.user.is_superuser else redirect('course', course_id)
 
 # All context end
