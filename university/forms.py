@@ -29,9 +29,10 @@ class CourseForm(forms.ModelForm):
 
 
 class AppointmentForm(forms.ModelForm):
-    class Meta:
-        model = Appointment
-        fields = ['student', 'time']
+    time = forms.DateField(widget=SelectDateWidget)
+    student = forms.ChoiceField(choices=get_student_list, label='student', required=False)
+    teacher = forms.ChoiceField(choices=get_teacher_list, label='teacher', required=False)
+
 
 
 class QuestionForm(forms.ModelForm):

@@ -10,8 +10,10 @@ class Course(models.Model):
 
 class Appointment(models.Model):
     objects = models.Manager()
+    time = models.DateField()
+    teacher = models.CharField(max_length=255)
     student = models.CharField(max_length=255)
-    time = models.DateTimeField()
+    zoom_link = models.CharField(max_length=255)
 
 
 class Question(models.Model):
