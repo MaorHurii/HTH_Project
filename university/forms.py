@@ -7,10 +7,15 @@ class CourseForm(forms.ModelForm):
         fields = ['name', 'category']
 
 
+
 class AppointmentForm(forms.ModelForm):
+    time = forms.DateField(widget=SelectDateWidget)
+    student = forms.ChoiceField(choices=get_student_list, label='student', required=False)
+    teacher = forms.ChoiceField(choices=get_teacher_list, label='teacher', required=False)
+
     class Meta:
         model = Appointment
-        fields = ['student', 'time']
+        fields = ['zoom_link']
 
 
 class QuestionForm(forms.ModelForm):

@@ -152,10 +152,15 @@ def view_reports(request):
     return render(request, 'university/view_reports.html', {'reports': reports})
 
 
-@role_required(TEACHER_ROLE)
+
+@role_required(STUDENT_TEACHER_ROLE)
 def view_appointments(request):
-    appointments = Appointment.objects.all()
+    if validate_role(request.user, STUDENT_ROLE):
+        appointments = Appointment.objects.filter(student=request.user.username)
+    else:
+        appointments = Appointment.objects.filter(teacher=request.user.username)
     return render(request, 'university/view_appointments.html', {'appointments': appointments})
+
 
 @role_required(STUDENT_TEACHER_ROLE)
 def create_appointment(request):
