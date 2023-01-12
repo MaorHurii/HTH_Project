@@ -1,0 +1,29 @@
+{% extends 'university/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow p-3 mb-5 bg-white rounded">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="text-center">Welcome to HTH</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="username" class="font-weight-bold">Username</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password" class="font-weight-bold">Password</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}AZQSW2E3 HJ
