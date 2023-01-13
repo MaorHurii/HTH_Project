@@ -125,7 +125,6 @@ def delete_appointment(request, appointment_id):
     appointment.delete()
     return redirect('view_appointments')
 
-
 # Teacher context end
 
 # Student context start
