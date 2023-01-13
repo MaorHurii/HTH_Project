@@ -2,10 +2,10 @@ from django.contrib.auth import authenticate, login as login_user, logout as log
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
-from django.contrib import messages
-from .models import Course, Appointment, Report, Question, Answer, File
-from .forms import CourseForm, AppointmentForm, AnswerForm
 from .models import Course, Appointment, Question, File, Answer, Scholarship
+from django.contrib import messages
+from .forms import CourseForm, AppointmentForm, AnswerForm
+
 
 
 ADMIN_ROLE = 'Admin'
@@ -115,14 +115,15 @@ def view_courses(request):
 
 @role_required(ADMIN_ROLE)
 def edit_course(request, course_id):
-    course = get_object_or_404(Course, pk=course_id)
+    """Handles the admin edit page"""
+    course_obj = get_object_or_404(Course, id=course_id)
     if request.method == 'POST':
-        form = CourseForm(request.POST, instance=course)
+        form = CourseForm(request.POST, instance=course_obj)
         if form.is_valid():
             form.save()
             return redirect('admin_home')
     else:
-        form = CourseForm(instance=course)
+        form = CourseForm(instance=course_obj)
     return render(request, 'university/edit_course.html', {'form': form})
 
 
