@@ -32,6 +32,15 @@ def login(request):
     return render(request, 'university/login.html')
 
 
+@role_required(STUDENT_TEACHER_ROLE)
+def home(request):
+    courses = Course.objects.all()
+    context = {'courses': courses}
+    if validate_role(request.user, STUDENT_ROLE):
+        files_count = len(File.objects.filter(uploader=request.user.username))
+    return render(request, 'university/home.html', context)
+
+
 def validate_role(user, role):
     if role == ADMIN_ROLE:
         return user.is_superuser
@@ -131,13 +140,6 @@ def delete_report(request, report_id):
 # Teacher context start
 
 
-
-@role_required(TEACHER_ROLE)
-def teacher_home(request):
-    files = File.objects.filter(teacher_file=True)
-    return render(request, 'university/teacher_home.html', {'files': files})
-
-
 @role_required(TEACHER_ROLE)
 def view_reports(request):
     reports = Report.objects.all()
@@ -217,14 +219,6 @@ def answer_question(request, question_id):
 # Teacher context end
 
 # Student context start
-
-
-
-@role_required(STUDENT_ROLE)
-def student_home(request):
-    courses = Course.objects.all()
-    files = File.objects.filter(teacher_file=False)
-    return render(request, 'university/student_home.html', {'courses': courses, 'files': files})
 
 
 @role_required(STUDENT_ROLE)
