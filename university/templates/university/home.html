@@ -1,0 +1,44 @@
+{% extends 'university/base.html' %}
+
+{% block content %}
+{% if scholarship %}
+<div class="row justify-content-center">
+    <div class="alert alert-success" role="alert">
+        Congratulations! You have helped a lot of other students, you have gained a scholarship. Would you like to redeem it?
+        <form method="POST" action="{% url 'redeem_scholarship' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">Redeem</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow p-3 mb-5 bg-white rounded">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="text-center">Courses</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                                <tr>
+                                    <td><a href="{% url 'course' course.id %}" class="text-primary font-weight-bold">{{ course.name }}</a></td>
+                                    <td>{{ course.category }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
