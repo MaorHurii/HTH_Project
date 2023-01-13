@@ -1,47 +1,35 @@
-{% extends 'university/base.html' %}
-{% load custom_tags %}
-
-{% block content %}
+{% extends 'university/base.html' %} {% block content %}
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    Appointments
-                </div>
-                <div class="card-body">
-                    <a href="{% url 'create_appointment' %}" class="btn btn-primary mb-4">Create Appointment</a>
-                    <table class="table">
-                        <thead class="thead-light">
-                            <tr>
-                                <th scope="col">Student</th>
-                                <th scope="col">Time</th>
-                                <th scope="col">Link</th>
-                                <th scope="col">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for appointment in appointments %}
-                            <tr>
-                                <td>{{ appointment.student }}</td>
-                                <td>{{ appointment.time }}</td>
-                                <td>
-                                    <a href="{{ appointment.zoom_link }}" class="btn btn-secondary btn-sm">
-                                        {{ appointment.zoom_link }}
-                                    </a>
-                                </td>
-                                <td>
-                                    {% if request.user|validate_role:'Teacher' %}
-                                    <a href="{% url 'delete_appointment' appointment.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to perform this action?')">Delete</a>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      <h1>Meeting</h1>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Student</th>
+            <th scope="col">Time</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for appointment in appointments %}
+          <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{ appointment.student }}</td>
+            <td>{{ appointment.time }}</td>
+            <td>
+              <a
+                href="{% url 'delete_appointment' appointment.id %}"
+                class="btn btn-danger"
+                >Delete</a
+              >
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
+  </div>
 </div>
 {% endblock %}
