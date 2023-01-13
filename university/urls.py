@@ -30,4 +30,5 @@ urlpatterns = [
     path('student/view_questions/', views.view_questions, name='view_questions'),
     path('student/create_question/', views.create_question, name='create_question'),
     path('student/upload_file/', views.upload_file, name='upload_file'),
+    path('student/redeem_scholarship/', views.redeem_scholarship, name='redeem_scholarship'),
 ]

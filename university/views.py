@@ -5,6 +5,7 @@ from django.http import HttpResponseForbidden
 from django.contrib import messages
 from .models import Course, Appointment, Report, Question, Answer, File
 from .forms import CourseForm, AppointmentForm, AnswerForm
+from .models import Course, Appointment, Question, File, Answer, Scholarship
 
 
 ADMIN_ROLE = 'Admin'
@@ -29,6 +30,19 @@ def login(request, role):
     else:
         messages.warning(request, 'Invalid username or password')
         return False
+
+
+@role_required(STUDENT_TEACHER_ROLE)
+def home(request):
+    courses = Course.objects.all()
+    context = {'courses': courses}
+    if validate_role(request.user, STUDENT_ROLE):
+        # Check if student uploaded the necessary amount of files and didn't redeem a scholarship yet
+        files_count = len(File.objects.filter(uploader=request.user.username))
+        scholarship = Scholarship.objects.filter(student=request.user.username).exists()
+        if files_count >= 20 and not scholarship:
+            context.update({'scholarship': True})
+    return render(request, 'university/home.html', context)
 
 
 def validate_role(user, role):

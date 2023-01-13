@@ -50,3 +50,7 @@ class Teacher(models.Model):
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+class Scholarship(models.Model):
+    objects = models.Manager()
+    student = models.CharField(max_length=255)
