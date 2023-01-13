@@ -5,7 +5,8 @@ app_name = 'university'
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('login/', views.login, name='login'),       
+    path('login/', views.login, name='login'),
+    path('home/', views.home, name='home'),       
     path('logout/', views.logout, name='logout'),
     path('questions/<int:question_id>/', views.view_question, name='view_question'),
     path('admin/home/', views.admin_home, name='admin_home'),
@@ -16,7 +17,6 @@ urlpatterns = [
     path('teacher/delete_file/<int:file_id>/', views.delete_file, name='delete_file'),
     path('teacher/login/', views.teacher_login, name='teacher_login'),
     path('teacher/logout/', views.logout, name='logout'),
-    path('teacher/home/', views.teacher_home, name='teacher_home'),
     path('teacher/upload_file/', views.upload_file, name='upload_file'),
     path('teacher/view_reports/', views.view_reports, name='view_reports'),
     path('teacher/view_appointments/', views.view_appointments, name='view_appointments'),
@@ -25,7 +25,6 @@ urlpatterns = [
     path('teacher/create_question/', views.create_question, name='create_question'),
     path('teacher/delete_question/<int:question_id>/', views.delete_question, name='delete_question'),
     path('teacher/answer_question/<int:question_id>/', views.answer_question, name='answer_question'),
-    path('student/home/', views.student_home, name='student_home'),
     path('student/create_question/', views.create_question, name='create_question'),
     path('student/upload_file/', views.upload_file, name='upload_file'),
 ]
