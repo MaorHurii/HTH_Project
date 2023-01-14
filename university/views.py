@@ -2,25 +2,14 @@ from django.contrib.auth import authenticate, login as login_user, logout as log
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.contrib.auth.models import Group
 from django.contrib import messages
+from django.contrib.auth.models import User
+from django.shortcuts import redirect
 
 from .constants import ADMIN_ROLE, TEACHER_ADMIN_ROLE, STUDENT_TEACHER_ROLE, TEACHER_ROLE, STUDENT_ROLE
 from .models import Course, Appointment, Question, File, Answer, Scholarship
 from .forms import CourseForm, AppointmentForm, AnswerForm, SignUpForm
-
-
-@role_required(STUDENT_TEACHER_ROLE)
-def home(request):
-    courses = Course.objects.all()
-    context = {'courses': courses}
-    if validate_role(request.user, STUDENT_ROLE):
-        # Check if student uploaded the necessary amount of files and didn't redeem a scholarship yet
-        files_count = len(File.objects.filter(uploader=request.user.username))
-        scholarship = Scholarship.objects.filter(student=request.user.username).exists()
-        if files_count >= 20 and not scholarship:
-            context.update({'scholarship': True})
-    return render(request, 'university/home.html', context)
 
 
 def validate_role(user, role):

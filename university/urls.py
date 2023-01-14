@@ -28,14 +28,6 @@ urlpatterns = [
     path('teacher/create_appointment/', views.create_appointment, name='create_appointment'),
     path('teacher/answer_question/<int:question_id>/', views.answer_question, name='answer_question'),
     path('teacher/delete_appointment/<int:appointment_id>/', views.delete_appointment, name='delete_appointment'),
-    path('teacher/view_questions/', views.view_questions, name='view_questions'),
-    path('teacher/create_question/', views.create_question, name='create_question'),
-    path('teacher/delete_question/<int:question_id>/', views.delete_question, name='delete_question'),
-    path('teacher/answer_question/<int:question_id>/', views.answer_question, name='answer_question'),
-    path('student/login/', views.student_login, name='student_login'),
-    path('student/logout/', views.logout, name='logout'),
-    path('student/home/', views.student_home, name='student_home'),
-    path('student/view_questions/', views.view_questions, name='view_questions'),
-    path('student/create_question/', views.create_question, name='create_question'),
-    path('student/upload_file/', views.upload_file, name='upload_file'),
+    # Student URLs
+    path('student/redeem_scholarship/', views.redeem_scholarship, name='redeem_scholarship'),
 ]
