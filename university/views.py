@@ -11,7 +11,6 @@ from .constants import ADMIN_ROLE, TEACHER_ADMIN_ROLE, STUDENT_TEACHER_ROLE, TEA
 from .models import Course, Appointment, Question, File, Answer, Scholarship
 from .forms import CourseForm, AppointmentForm, AnswerForm, SignUpForm
 
-
 def validate_role(user, role):
     """The function receives a user object and a role and returns True if the user is part of that group/role"""
     if role == ADMIN_ROLE:
@@ -43,13 +42,20 @@ def role_required(role):
 # Admin context start
 
 @role_required(ADMIN_ROLE)
+def delete_user(request, user_id):
+    user = User.objects.get(id=user_id)
+    user.delete()
+    return redirect('admin_home')
+
+
+@role_required(ADMIN_ROLE)
 def admin_home(request):
     courses = Course.objects.all()
     users = User.objects.all()
     teacher_files = File.objects.filter(teacher_file=True)
     student_files = File.objects.filter(teacher_file=False)
     context = {
-        'users' : users,
+        'users': users,
         'courses': courses,
         'teacher_files': teacher_files,
         'student_files': student_files
@@ -92,12 +98,6 @@ def edit_course(request, course_id):
 
 
 @role_required(ADMIN_ROLE)
-def delete_user(request, user_id):
-    user = User.objects.get(id=user_id)
-    user.delete()
-    return redirect('admin_home')
-
-@role_required(ADMIN_ROLE)
 def delete_course(request, course_id):
     course_obj = Course.objects.get(id=course_id)
     course_obj.delete()
@@ -134,6 +134,7 @@ def delete_appointment(request, appointment_id):
     appointment = Appointment.objects.get(id=appointment_id)
     appointment.delete()
     return redirect('view_appointments')
+
 
 # Teacher context end
 
@@ -240,15 +241,15 @@ def view_question(request, question_id):
 @role_required(STUDENT_TEACHER_ROLE)
 def delete_question(request, question_id):
     question = Question.objects.get(id=question_id)
-    # Check if the user is allowed to delete the question
+    # Check if the user is allowed to delete the file
     if validate_role(request.user, TEACHER_ROLE) or question.creator == request.user.username:
         question.delete()
     return redirect('course', course_id=question.course.id)
 
 
-@role_required(STUDENT_TEACHER_ROLE)#לפני הכניסה לפונקציה נבדוק באיזה רול אנחנו נכנסים 
-def answer_question(request, question_id): 
-    question = get_object_or_404(Question, id=question_id) 
+@role_required(STUDENT_TEACHER_ROLE)
+def answer_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
     if request.method == 'POST':
         form = AnswerForm(request.POST)
         answer = form.save(commit=False)
@@ -269,8 +270,6 @@ def view_appointments(request):
 
 def index(request):
     return render(request, 'university/index.html')
-
-
 
 
 def login(request):

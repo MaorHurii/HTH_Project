@@ -17,16 +17,16 @@ class File(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='files')
 
 
-class Question(models.Model): # Question מגדיר מחלקה בשם 
-    objects = models.Manager()  
-    title = models.CharField(max_length=255) #מכיל את כותרת השאלה בתוך מחרוזת באורך של 255 תוים 
-    body = models.TextField()#מכיל את גוף השאלה בתוך מחרוזת ארוכה 
-    course = models.ForeignKey(Course, on_delete=models.CASCADE) #מכיל קישור למחלקה ומוסיף אופציה למחיקה 
-    creator = models.CharField(max_length=255)#מכיל את שם יוצר השאלה 
-    timestamp = models.DateTimeField(auto_now_add=True)#תאריך וזמן יצירת השאלה 
+class Question(models.Model):
+    objects = models.Manager()
+    title = models.CharField(max_length=255)
+    body = models.TextField()
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    creator = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
 
-class Answer(models.Model): #מחלקת תשובה 
+class Answer(models.Model):
     objects = models.Manager()
     creator = models.CharField(max_length=255)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
@@ -49,7 +49,3 @@ class Scholarship(models.Model):
 
 class Meta:
     app_label = 'university'
-
-class Scholarship(models.Model):
-    objects = models.Manager()
-    student = models.CharField(max_length=255)
