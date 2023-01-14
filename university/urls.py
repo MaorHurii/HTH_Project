@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views 
 
 app_name = 'university'
 
@@ -19,6 +19,7 @@ urlpatterns = [
     path('delete_question/<int:question_id>/', views.delete_question, name='delete_question'),
     # Admin URLs
     path('admin/home/', views.admin_home, name='admin_home'),
+    path('admin/home/<int:user_id>/delete/', views.delete_user, name='delete_user'),   
     path('admin/add_course/', views.add_course, name='add_course'),
     path('admin/edit_course/<int:course_id>/', views.edit_course, name='edit_course'),
     path('admin/delete_course/<int:course_id>/', views.delete_course, name='delete_course'),

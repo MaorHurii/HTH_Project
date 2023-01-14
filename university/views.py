@@ -4,6 +4,8 @@ from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.contrib import messages
+from django.contrib.auth.models import User
+from django.shortcuts import redirect
 
 from .constants import ADMIN_ROLE, TEACHER_ADMIN_ROLE, STUDENT_TEACHER_ROLE, TEACHER_ROLE, STUDENT_ROLE
 from .models import Course, Appointment, Question, File, Answer, Scholarship
@@ -43,9 +45,11 @@ def role_required(role):
 @role_required(ADMIN_ROLE)
 def admin_home(request):
     courses = Course.objects.all()
+    users = User.objects.all()
     teacher_files = File.objects.filter(teacher_file=True)
     student_files = File.objects.filter(teacher_file=False)
     context = {
+        'users' : users,
         'courses': courses,
         'teacher_files': teacher_files,
         'student_files': student_files
@@ -86,6 +90,12 @@ def edit_course(request, course_id):
         form = CourseForm(instance=course_obj)
     return render(request, 'university/edit_course.html', {'form': form})
 
+
+@role_required(ADMIN_ROLE)
+def delete_user(request, user_id):
+    user = User.objects.get(id=user_id)
+    user.delete()
+    return redirect('admin_home')
 
 @role_required(ADMIN_ROLE)
 def delete_course(request, course_id):
@@ -259,6 +269,8 @@ def view_appointments(request):
 
 def index(request):
     return render(request, 'university/index.html')
+
+
 
 
 def login(request):
