@@ -1,0 +1,95 @@
+{% extends 'university/base.html' %}
+{% load static %}
+{% load custom_tags %}
+{% block content %}
+<div class="row justify-content-center">
+    <h1 class="card-header bg-primary text-white rounded shadow">{{ course.name }}</h1>
+</div>
+<div class="container mt-1 mb-2">
+  <!-- File Upload section -->
+    <form method="post" enctype="multipart/form-data" action="{% url 'upload_file' course.id %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <input type="file" class="card-header bg-secondary text-white rounded shadow" name="file" id="file" required>
+      </div>
+      <button type="submit" class="btn btn-primary" id="submit-button">Add File</button>
+    </form>
+</div>
+<div class="card-header bg-secondary text-white">
+    <h3>Files</h3>
+</div>
+<table class="table table-hover">
+    <!-- File List section -->
+    <thead class="thead-light">
+        <tr>
+            <th scope="col">Filename</th>
+            <th scope="col">Uploader</th>
+            <th scope="col">Timestamp</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody class="bg-white">
+        {% for file in files %}
+        <tr>
+            <td>{{ file.filename }}</td>
+            <td>{{ file.uploader }}</td>
+            <td>{{ file.timestamp }}</td>
+            <td>
+                <a href="{% url 'download_file' file.id %}" class="btn btn-secondary btn-sm" download>Download</a>
+                {% if file.uploader == request.user.username %}
+                    <a href="{% url 'delete_file' file.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to perform this action?')">Delete</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2 class="mb-4 card-header bg-secondary text-white">Ask a question</h2>
+<div class="container mt-2 mb-3 bg rounded">
+  <!-- Question Creation section -->
+  <form method="post" action="{% url 'create_question' course.id %}" class="form-group">
+    {% csrf_token %}
+    <div class="form-row">
+      <div class="col-md-9">
+        <input class="form-control" type="text" name="title" placeholder="Title" required>
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-primary btn-block" id="question">Create question</button>
+      </div>
+    </div>
+    <textarea class="form-control mt-3" name="body" placeholder="Write your question here" required></textarea>
+  </form>
+</div>
+
+
+<table class="table table-hover">
+  <!-- Question List section -->
+    <thead class="thead-light">
+        <tr>
+            <th scope="col">Timestamp</th>
+            <th scope="col">Title</th>
+            <th scope="col">Student</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <div class="card-header bg-secondary text-white">
+        <h2>Questions</h2>
+    </div>
+    <tbody class="bg-white">
+        {% for question in questions %}
+        <tr>
+            <td>{{ question.timestamp }}</td>
+            <td>{{ question.title }}</td>
+            <td>{{ question.creator }}</td>
+            <td>
+                <a href="{% url 'view_question' question.id %}" class="btn btn-secondary btn-sm">View</a>
+                {% if question.creator == request.user.username %}
+                <a href="{% url 'delete_question' question.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to perform this action?')">Delete</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

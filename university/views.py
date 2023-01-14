@@ -1,35 +1,15 @@
 from django.contrib.auth import authenticate, login as login_user, logout as logout_user
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
-from .models import Course, Appointment, Question, File, Answer, Scholarship
 from django.contrib import messages
+from .models import Course, Appointment, Report, Question, Answer, File
 from .forms import CourseForm, AppointmentForm, AnswerForm
 
-
-
-ADMIN_ROLE = 'Admin'
-TEACHER_ROLE = 'Teacher'
-STUDENT_ROLE = 'Student'
-TEACHER_ADMIN_ROLE = 'student_admin'
-STUDENT_TEACHER_ROLE = 'student_teacher'
-
-
-def index(request):
-    return render(request, 'university/index.html')
-
-
-def login(request, role):
-    username = request.POST['username']
-    password = request.POST['password']
-    user = authenticate(request, username=username, password=password)
-
-    if user is not None and validate_role(user, role):
-        login_user(request, user)
-        return True
-    else:
-        messages.warning(request, 'Invalid username or password')
-        return False
+from .constants import ADMIN_ROLE, TEACHER_ADMIN_ROLE, STUDENT_TEACHER_ROLE, TEACHER_ROLE, STUDENT_ROLE
+from .models import Course, Appointment, Question, File, Answer, Scholarship
+from .forms import CourseForm, AppointmentForm, AnswerForm, SignUpForm
 
 
 @role_required(STUDENT_TEACHER_ROLE)
@@ -46,6 +26,7 @@ def home(request):
 
 
 def validate_role(user, role):
+    """The function receives a user object and a role and returns True if the user is part of that group/role"""
     if role == ADMIN_ROLE:
         return user.is_superuser
     elif role == TEACHER_ADMIN_ROLE:
@@ -58,6 +39,7 @@ def validate_role(user, role):
 
 
 def role_required(role):
+    """This decorator wraps the relevant functions and manages the role requirement / permission logic"""
     def decorator(func):
         def wrapper(request, *args, **kwargs):
             # Check if user is authenticated
@@ -71,13 +53,7 @@ def role_required(role):
     return decorator
 
 
-@login_required
-def logout(request):
-    logout_user(request)
-    return redirect('index')
-
 # Admin context start
-
 
 @role_required(ADMIN_ROLE)
 def admin_home(request):
@@ -90,7 +66,6 @@ def admin_home(request):
         'student_files': student_files
     }
     return render(request, 'university/admin_home.html', context)
-
 
 
 @role_required(ADMIN_ROLE)
@@ -129,156 +104,94 @@ def edit_course(request, course_id):
 
 @role_required(ADMIN_ROLE)
 def delete_course(request, course_id):
-    course = Course.objects.get(id=course_id)
-    course.delete()
+    course_obj = Course.objects.get(id=course_id)
+    course_obj.delete()
     return redirect('admin_home')
 
-
-@role_required(ADMIN_ROLE)
-def delete_report(request, report_id):
-    report = Report.objects.get(id=report_id)
-    report.delete()
-    return redirect('admin_home')
 
 # Admin context end
 
 # Teacher context start
 
-
-def teacher_login(request):
-    if request.method == 'POST':
-        if request.method == 'POST':
-            if login(request, TEACHER_ROLE):
-                return redirect('teacher_home')
-            else:
-                return redirect('teacher_login')
-    return render(request, 'university/teacher_login.html')
-
-
-@role_required(TEACHER_ROLE)
-def teacher_home(request):
-    files = File.objects.filter(teacher_file=True)
-    return render(request, 'university/teacher_home.html', {'files': files})
-
-
-@role_required(TEACHER_ROLE)
-def view_reports(request):
-    reports = Report.objects.all()
-    return render(request, 'university/view_reports.html', {'reports': reports})
-
-
-@role_required(TEACHER_ROLE)
-def view_appointments(request):
-    appointments = Appointment.objects.all()
-    return render(request, 'university/view_appointments.html', {'appointments': appointments})
-
-
-@role_required(TEACHER_ROLE)
+@role_required(STUDENT_TEACHER_ROLE)
 def create_appointment(request):
     if request.method == 'POST':
         form = AppointmentForm(request.POST)
         if form.is_valid():
-            student = form.cleaned_data['student']
+            if validate_role(request.user, TEACHER_ROLE):
+                teacher = request.user.username
+                student = form.cleaned_data['student']
+            else:
+                student = request.user.username
+                teacher = form.cleaned_data['teacher']
+
             time = form.cleaned_data['time']
-            Appointment.objects.create(student=student, time=time)
-            return redirect('view_appointments')
+            link = form.cleaned_data['zoom_link']
+            Appointment.objects.create(teacher=teacher, student=student, time=time, zoom_link=link)
+        return redirect('view_appointments')
     else:
         form = AppointmentForm()
-    return render(request, 'university/create_appointment.html')
+    return render(request, 'university/create_appointment.html', {'form': form})
 
 
-def delete_appointment(appointment_id):
+@role_required(TEACHER_ROLE)
+def delete_appointment(request, appointment_id):
     appointment = Appointment.objects.get(id=appointment_id)
     appointment.delete()
     return redirect('view_appointments')
-
-
-@role_required(TEACHER_ROLE)
-def view_questions(request):
-    questions = Question.objects.all()
-    return render(request, 'university/view_questions.html', {'questions': questions})
-
-
-@role_required(TEACHER_ROLE)
-def create_question(request):
-    if request.method == 'POST':
-        title = request.POST['title']
-        description = request.POST['description']
-        Question.objects.create(title=title, description=description)
-        return redirect('view_questions')
-    return render(request, 'university/create_question.html')
-
-
-@role_required(TEACHER_ROLE)
-def delete_question(question_id):
-    question = Question.objects.get(id=question_id)
-    question.delete()
-    return redirect('view_questions')
-
-
-@role_required(TEACHER_ROLE)
-def answer_question(request, question_id):
-    if request.method == 'POST':
-        form = AnswerForm(request.POST)
-        if form.is_valid():
-            answer = form.cleaned_data['answer']
-            question = Question.objects.get(id=question_id)
-            Answer.objects.create(question=question, answer=answer)
-            return redirect('view_questions')
-    else:
-        form = AnswerForm()
-    return render(request, 'university/answer_question.html', {'form': form})
 
 # Teacher context end
 
 # Student context start
 
-
-def student_login(request):
-    if request.method == 'POST':
-        if login(request, STUDENT_ROLE):
-            return redirect('student_home')
-        else:
-            return redirect('student_login')
-    return render(request, 'university/student_login.html')
-
-
 @role_required(STUDENT_ROLE)
-def student_home(request):
-    courses = Course.objects.all()
-    files = File.objects.filter(teacher_file=False)
-    return render(request, 'university/student_home.html', {'courses': courses, 'files': files})
-
-
-@role_required(STUDENT_ROLE)
-def view_questions(request):
-    questions = Question.objects.all()
-    return render(request, 'university/view_questions.html', {'questions': questions})
-
-
-@role_required(STUDENT_ROLE)
-def create_question(request):
+def create_question(request, course_id):
+    course_obj = get_object_or_404(Course, id=course_id)
     if request.method == 'POST':
         title = request.POST['title']
-        description = request.POST['description']
-        Question.objects.create(title=title, description=description)
-        return redirect('view_questions')
-    return render(request, 'university/create_question.html')
+        body = request.POST['body']
+        creator = request.user.username
+        question = Question.objects.create(title=title, body=body, creator=creator, course=course_obj)
+        return redirect('view_question', question_id=question.id)
+    return redirect(request, 'course', course_id=course_id)
 
 # Student context end
 
 
-# All context start
+# Multi context start
 
 @role_required(STUDENT_TEACHER_ROLE)
-def upload_file(request):
+def home(request):
+    courses = Course.objects.all()
+    context = {'courses': courses}
+    if validate_role(request.user, STUDENT_ROLE):
+        # Check if student uploaded the necessary amount of files and didn't redeem a scholarship yet
+        files_count = len(File.objects.filter(uploader=request.user.username))
+        scholarship = Scholarship.objects.filter(student=request.user.username).exists()
+        if files_count >= 20 and not scholarship:
+            context.update({'scholarship': True})
+    return render(request, 'university/home.html', context)
+
+
+@login_required
+def download_file(request, file_id):
+    file = File.objects.get(id=file_id)
+    response = HttpResponse(file.file, content_type='application/octet-stream')
+    response['Content-Disposition'] = f'attachment; filename={file.filename}'
+    return response
+
+
+@login_required
+def upload_file(request, course_id):
+    course_obj = get_object_or_404(Course, id=course_id)
     if request.method == 'POST':
         file = request.FILES['file']
         filename = file.name
         teacher_file = validate_role(request.user, TEACHER_ROLE)
-        File.objects.create(filename=filename, file=file, uploader=request.user.username, teacher_file=teacher_file)
-        return redirect('teacher_home' if teacher_file else 'student_home')
-    return render(request, 'university/upload_file.html')
+        File.objects.create(
+            filename=filename, file=file, uploader=request.user.username, teacher_file=teacher_file, course=course_obj
+        )
+        return redirect('course', course_id=course_id)
 
 
 @login_required
@@ -291,4 +204,116 @@ def delete_file(request, file_id):
         file.delete()
     return redirect('admin_home') if request.user.is_superuser else redirect('course', course_id)
 
-# All context end
+
+@role_required(STUDENT_ROLE)
+def redeem_scholarship(request):
+    scholarship = Scholarship.objects.create(student=request.user.username)
+    scholarship.save()
+    return redirect('home')
+
+
+@login_required
+def course(request, course_id):
+    # Query the course with the given course_id
+    course_obj = get_object_or_404(Course, id=course_id)
+    # Query the files related to the course
+    files = File.objects.filter(course=course_obj)
+    # Query the questions related to the course
+    questions = Question.objects.filter(course=course_obj)
+    # Render the course template with the course and its related files as context
+
+    context = {
+        'course': course_obj,
+        'course_id': course_obj.id,
+        'files': files,
+        'questions': questions,
+    }
+    return render(request, 'university/course.html', context)
+
+
+@role_required(STUDENT_TEACHER_ROLE)
+def view_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+    answers = Answer.objects.filter(question=question).order_by('timestamp')
+    context = {
+        'question': question,
+        'answers': answers
+    }
+    return render(request, 'university/view_question.html', context)
+
+
+@role_required(STUDENT_TEACHER_ROLE)
+def delete_question(request, question_id):
+    question = Question.objects.get(id=question_id)
+    # Check if the user is allowed to delete the question
+    if validate_role(request.user, TEACHER_ROLE) or question.creator == request.user.username:
+        question.delete()
+    return redirect('course', course_id=question.course.id)
+
+
+@role_required(STUDENT_TEACHER_ROLE)#לפני הכניסה לפונקציה נבדוק באיזה רול אנחנו נכנסים 
+def answer_question(request, question_id): 
+    question = get_object_or_404(Question, id=question_id) 
+    if request.method == 'POST':
+        form = AnswerForm(request.POST)
+        answer = form.save(commit=False)
+        answer.creator = request.user
+        answer.question = question
+        answer.save()
+        return redirect('view_question', question_id=question_id)
+
+
+@role_required(STUDENT_TEACHER_ROLE)
+def view_appointments(request):
+    if validate_role(request.user, STUDENT_ROLE):
+        appointments = Appointment.objects.filter(student=request.user.username)
+    else:
+        appointments = Appointment.objects.filter(teacher=request.user.username)
+    return render(request, 'university/view_appointments.html', {'appointments': appointments})
+
+
+def index(request):
+    return render(request, 'university/index.html')
+
+
+def login(request):
+    """Handles the login of users and redirects them to their respective home pages"""
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login_user(request, user)
+            return redirect('admin_home' if user.is_superuser else 'home')
+        else:
+            messages.warning(request, 'Invalid username or password')
+    return render(request, 'university/login.html')
+
+
+@login_required
+def logout(request):
+    logout_user(request)
+    return redirect('index')
+
+
+def signup(request):
+    """Handles the user registration form and creates a new user"""
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            user.refresh_from_db()  # load the profile instance created by the signal
+            group = Group.objects.get(name=form.cleaned_data.get('role'))
+            user.groups.add(group)
+            user.save()
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=user.username, password=raw_password)
+            login_user(request, user)
+            return redirect('home')
+    else:
+        form = SignUpForm()
+    return render(request, 'university/signup.html', {'form': form})
+
+
+# Multi context end
