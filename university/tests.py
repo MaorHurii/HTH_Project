@@ -11,6 +11,53 @@ User = get_user_model()
 
 class ViewsTests(TestCase):
 
+    def test_admin_course_creation(self):
+        """Test course creation by an admin"""
+        # Login as admin
+        self.client.login(username=self.admin.username, password=self.default_password)
+
+        # Test course creation with correct data
+        response = self.client.post(reverse('add_course'), data={'name': 'Test Course', 'category': 'Test Category'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Course.objects.count(), 2)
+        self.assertEqual(Course.objects.last().name, 'Test Course')
+
+        # Test course creation with incorrect data
+        response = self.client.post(reverse('add_course'), data={'name': '', 'category': ''})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Course.objects.count(), 2)
+        self.client.logout()
+
+    def test_admin_course_editing(self):
+        """Test course editing"""
+        # Login as admin
+        login_response = self.client.post(
+            reverse('login'),
+            data={'username': self.admin, 'password': self.default_password},
+            follow=True
+        )
+        self.assertEqual(login_response.status_code, 200)
+
+        # Test course editing
+        response = self.client.post(reverse('edit_course', args=[self.course.id]), data={'name': 'Course 2', 'category': 'Category 2'}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Course.objects.get(id=1).name, 'Course 2')
+        self.assertEqual(Course.objects.get(id=1).category, 'Category 2')
+        self.client.logout()
+
+    def test_admin_course_deletion(self):
+        """Test course deletion"""
+        # Log in as admin
+        self.client.login(username=self.admin.username, password=self.default_password)
+
+        # Send POST request to delete a course
+        response = self.client.get(reverse('delete_course', args=[self.course.id]))
+
+        # Check that the course was deleted successfully
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Course.objects.count(), 0)
+        self.client.logout()
+
     def test_teacher_appointment(self):
         """Tests teacher appointment creation and deletion"""
         # Ensure that a teacher can create an appointment

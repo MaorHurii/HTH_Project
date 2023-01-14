@@ -49,3 +49,7 @@ class Scholarship(models.Model):
 
 class Meta:
     app_label = 'university'
+
+class Scholarship(models.Model):
+    objects = models.Manager()
+    student = models.CharField(max_length=255)
